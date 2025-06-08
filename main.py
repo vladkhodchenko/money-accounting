@@ -1,45 +1,78 @@
-from enum import Enum
-
-from typing import List
-
-from dataclasses import dataclass
-
+from abc import ABC, abstractmethod
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from enum import Enum
+from dataclasses import dataclass
+from typing import List
 
 
 class Capitalization(str, Enum):
-    MONTHLY = "monthly"  # ежемесячная - каждый месяц прибавляются проценты
-    # ежедневная - каждый день прибавляются проценты (как в яндексе)
-    DAY = "day"
-    # в конце срока прибавляются проценты (самое невыгодное)
+    MONTHLY = "monthly"
+    DAILY = "daily"
     END = "end"
 
 
+class InterestCalculator(ABC):
+    @abstractmethod
+    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+        pass
+
+
+class MonthlyInterestCalculator(InterestCalculator):
+    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+        effective_months = min(months, deposit.term_months)
+        monthly_rate = deposit.interest_rate / 100 / 12
+        return deposit.initial_amount * monthly_rate * effective_months
+
+
+class DailyInterestCalculator(InterestCalculator):
+    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+        effective_months = min(months, deposit.term_months)
+        days = effective_months * 30  # Упрощённо, 30 дней в месяце
+        daily_rate = deposit.interest_rate / 100 / 365
+        return deposit.initial_amount * daily_rate * days
+
+
+class EndTermInterestCalculator(InterestCalculator):
+    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+        if months < deposit.term_months:
+            return 0
+        return deposit.initial_amount * (deposit.interest_rate / 100) * (deposit.term_months / 12)
+
+
 @dataclass
-class Deposit:
+class DepositBase:
     name: str
     initial_amount: float
     interest_rate: float
     term_months: int
     date_from: date
-    capitalization: str = "monthly"
+    capitalization: Capitalization = Capitalization.MONTHLY
 
     @property
     def date_to(self):
         return self.date_from + relativedelta(months=self.term_months)
 
-    def calculate_profit_in_month(self) -> float:
-        profit = self.initial_amount * (self.interest_rate / 100 / 12)
-        return round(profit, 2)
 
-    def calculate_profit(self) -> float:
-        profit = self.calculate_profit_in_month() * self.term_months
-        return round(profit, 2)
+class Deposit(DepositBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.calculator = self._create_calculator()
 
-    def calculate_amount(self) -> float:
-        amount = self.initial_amount + self.calculate_profit()
-        return round(amount, 2)
+    def _create_calculator(self) -> InterestCalculator:
+        calculators = {
+            Capitalization.MONTHLY: MonthlyInterestCalculator(),
+            Capitalization.DAILY: DailyInterestCalculator(),
+            Capitalization.END: EndTermInterestCalculator()
+        }
+        return calculators[self.capitalization]
+
+    def calculate_profit(self, months: int) -> float:
+        return round(self.calculator.calculate_profit(self, months), 2)
+
+    def calculate_amount(self, months: int) -> float:
+        profit = self.calculate_profit(months)
+        return round(self.initial_amount + profit, 2)
 
 
 class Portfolio:
@@ -47,27 +80,20 @@ class Portfolio:
         self.deposits: List[Deposit] = []
 
     def add_deposit(self, *deposits: Deposit):
-        for deposit in deposits:
-            self.deposits.append(deposit)
+        self.deposits.extend(deposits)
 
-    def get_deposits(self):
-        list_name_deposits = []
-        for deposit in self.deposits:
-            list_name_deposits.append(deposit.name)
-        return list_name_deposits
+    def get_deposit_names(self) -> List[str]:
+        return [deposit.name for deposit in self.deposits]
 
     def calculate_total(self, target_months: int) -> float:
-        """Рассчитывает общую сумму через заданное количество месяцев"""
         total = 0.0
-
         for deposit in self.deposits:
-            total += deposit.initial_amount + deposit.calculate_profit_in_month() * \
-                target_months
-
-        return round(total, 2)
+            # Учитываем только действующие вклады
+            if target_months <= deposit.term_months:
+                total += deposit.calculate_amount(target_months)
+        return total
 
     def forecast(self, periods: List[int]) -> dict:
-        """Возвращает прогноз для списка периодов (в месяцах)"""
         return {months: self.calculate_total(months) for months in periods}
 
 
@@ -94,15 +120,16 @@ if __name__ == "__main__":
         capitalization='monthly'
     )
 
-    print("deposit_tinkof", deposit_tinkof.calculate_amount())
-    print("deposit_tinkof", deposit_tinkof.calculate_profit())
+    print("deposit_tinkof", deposit_tinkof.calculate_amount(months=2))
+    print("deposit_tinkof", deposit_tinkof.calculate_profit(months=2))
 
     portfolio.add_deposit(
         deposit_tinkof,
         deposit_alfa
     )
-    print(portfolio.get_deposits())
+    # print(portfolio.get_deposit_names())
+    # print("forecast=", forecast)
     # Делаем прогноз на разные периоды
     forecast = portfolio.forecast([3, 6, 12])
 
-    print("forecast=", forecast)
+
