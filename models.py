@@ -1,15 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from enum import Enum
+
 from dataclasses import dataclass
 from typing import List, Union, Dict
-
-
-class Capitalization(str, Enum):
-    MONTHLY = "monthly"
-    DAILY = "daily"
-    END = "end"
+from consts import Capitalization
 
 
 class InterestCalculator(ABC):

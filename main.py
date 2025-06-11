@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi import HTTPException, status
 
 from models import portfolio_service, Deposit
-from schemas import DepositCreate, DepositResponse
+from schemas import SDepositCreate, SDepositResponse
 
 from datetime import date
 
@@ -18,8 +18,8 @@ def root():
     }
 
 
-@app.post("/deposits")
-def create_deposit(deposit_data: DepositCreate):
+@app.post("/deposits", response_model = SDepositResponse)
+def create_deposit(deposit_data: SDepositCreate):
     try:
         existing = portfolio_service.get_deposit_by_name(deposit_data.name)
 
@@ -47,7 +47,7 @@ def create_deposit(deposit_data: DepositCreate):
 
         portfolio_service.add_deposit(deposit)
 
-        return DepositResponse(
+        return SDepositResponse(
             **deposit_data.dict(),
             date_to=deposit.date_to,
             profit=deposit.calculate_profit(deposit.term_months),
