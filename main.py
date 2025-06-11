@@ -1,135 +1,93 @@
-from abc import ABC, abstractmethod
+
+from fastapi import FastAPI
+from fastapi import HTTPException, status
+
+from models import portfolio_service, Deposit
+from schemas import DepositCreate, DepositResponse
+
 from datetime import date
-from dateutil.relativedelta import relativedelta
-from enum import Enum
-from dataclasses import dataclass
-from typing import List
 
 
-class Capitalization(str, Enum):
-    MONTHLY = "monthly"
-    DAILY = "daily"
-    END = "end"
+app = FastAPI()
 
 
-class InterestCalculator(ABC):
-    @abstractmethod
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
-        pass
+@app.get("/")
+def root():
+    return {
+        "message": "Savings Portfolio API - Документация доступна по /docs"
+    }
 
 
-class MonthlyInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
-        effective_months = min(months, deposit.term_months)
-        monthly_rate = deposit.interest_rate / 100 / 12
-        return deposit.initial_amount * monthly_rate * effective_months
+@app.post("/deposits")
+def create_deposit(deposit_data: DepositCreate):
+    try:
+        existing = portfolio_service.get_deposit_by_name(deposit_data.name)
+
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Вклад с именем '{deposit_data.name}' уже существует")
+
+        date_from = ""
+
+        if deposit_data.date_from is None:
+            date_from = date.today()
+        else:
+            date_from = deposit_data.date_from
+
+        deposit = Deposit(
+            name=deposit_data.name,
+            initial_amount=deposit_data.initial_amount,
+            interest_rate=deposit_data.interest_rate,
+            term_months=deposit_data.term_months,
+            date_from=date_from,
+            capitalization=deposit_data.capitalization
+
+        )
+
+        portfolio_service.add_deposit(deposit)
+
+        return DepositResponse(
+            **deposit_data.dict(),
+            date_to=deposit.date_to,
+            profit=deposit.calculate_profit(deposit.term_months),
+            total_amount=deposit.calculate_amount(deposit.term_months),
+        )
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
 
 
-class DailyInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
-        effective_months = min(months, deposit.term_months)
-        days = effective_months * 30  # Упрощённо, 30 дней в месяце
-        daily_rate = deposit.interest_rate / 100 / 365
-        return deposit.initial_amount * daily_rate * days
+@app.get("/deposits")
+def get_deposits():
+    deposits = portfolio_service.get_deposit_names()
+    print(deposits)
+
+    return deposits
 
 
-class EndTermInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
-        if months < deposit.term_months:
-            return 0
-        return deposit.initial_amount * (deposit.interest_rate / 100) * (deposit.term_months / 12)
+@app.patch("deposits/{name}")
+@app.get("/deposits/{name}")
+def get_deposit(name: str):
+    deposit = portfolio_service.get_deposit_by_name(name)
 
+    if not deposit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Вклад с именем '{name}' не найден"
+        )
 
-@dataclass
-class DepositBase:
-    name: str
-    initial_amount: float
-    interest_rate: float
-    term_months: int
-    date_from: date
-    capitalization: Capitalization = Capitalization.MONTHLY
-
-    @property
-    def date_to(self):
-        return self.date_from + relativedelta(months=self.term_months)
-
-
-class Deposit(DepositBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.calculator = self._create_calculator()
-
-    def _create_calculator(self) -> InterestCalculator:
-        calculators = {
-            Capitalization.MONTHLY: MonthlyInterestCalculator(),
-            Capitalization.DAILY: DailyInterestCalculator(),
-            Capitalization.END: EndTermInterestCalculator()
-        }
-        return calculators[self.capitalization]
-
-    def calculate_profit(self, months: int) -> float:
-        return round(self.calculator.calculate_profit(self, months), 2)
-
-    def calculate_amount(self, months: int) -> float:
-        profit = self.calculate_profit(months)
-        return round(self.initial_amount + profit, 2)
-
-
-class Portfolio:
-    def __init__(self):
-        self.deposits: List[Deposit] = []
-
-    def add_deposit(self, *deposits: Deposit):
-        self.deposits.extend(deposits)
-
-    def get_deposit_names(self) -> List[str]:
-        return [deposit.name for deposit in self.deposits]
-
-    def calculate_total(self, target_months: int) -> float:
-        total = 0.0
-        for deposit in self.deposits:
-            # Учитываем только действующие вклады
-            if target_months <= deposit.term_months:
-                total += deposit.calculate_amount(target_months)
-        return total
-
-    def forecast(self, periods: List[int]) -> dict:
-        return {months: self.calculate_total(months) for months in periods}
-
-
-# Пример использования
-if __name__ == "__main__":
-    # Создаем портфель сбережений
-    portfolio = Portfolio()
-
-    deposit_tinkof = Deposit(
-        name="deposit_tinkof",
-        initial_amount=10000,
-        interest_rate=19.0,
-        term_months=3,
-        date_from=date.today(),
-        capitalization='monthly'
+    return DepositResponse(
+        name=deposit.name,
+        initial_amount=deposit.initial_amount,
+        interest_rate=deposit.interest_rate,
+        term_months=deposit.term_months,
+        date_from=deposit.date_from,
+        capitalization=deposit.capitalization,
+        date_to=deposit.date_to,
+        profit=deposit.calculate_profit(deposit.term_months),
+        total_amount=deposit.calculate_amount(deposit.term_months)
     )
-
-    deposit_alfa = Deposit(
-        name="deposit_alfa",
-        initial_amount=100000,
-        interest_rate=20.03,
-        term_months=3,
-        date_from=date.today(),
-        capitalization='monthly'
-    )
-
-    print("deposit_tinkof", deposit_tinkof.calculate_amount(months=2))
-    print("deposit_tinkof", deposit_tinkof.calculate_profit(months=2))
-
-    portfolio.add_deposit(
-        deposit_tinkof,
-        deposit_alfa
-    )
-    # print(portfolio.get_deposit_names())
-    # print("forecast=", forecast)
-    # Делаем прогноз на разные периоды
-    forecast = portfolio.forecast([3, 6, 12])
-
-
