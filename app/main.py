@@ -1,11 +1,10 @@
 
 from fastapi import FastAPI
 from fastapi import HTTPException, status
+from datetime import date
 
 from logic import portfolio_service, Deposit
 from schemas import SDepositCreate, SDepositResponse
-
-from datetime import date
 from deposits.router import router as router_deposits
 
 app = FastAPI()

@@ -1,10 +1,11 @@
 import sqlalchemy
+import os
 
 from deposits.models import Deposit
 from sqlalchemy.orm import sessionmaker
 from datetime import date
 
-DIR = "/mnt/c/Users/sidyu/Documents/code/development/onlycash"
+DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 engine=sqlalchemy.create_engine(f'sqlite:///{DIR}/onlycash.db')
 
