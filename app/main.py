@@ -9,7 +9,6 @@ from datetime import date
 from deposits.router import router as router_deposits
 
 app = FastAPI()
-
 app.include_router(router_deposits)
 
 
