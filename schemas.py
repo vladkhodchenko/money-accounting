@@ -1,17 +1,19 @@
 from pydantic import BaseModel
 from datetime import date
-from models import Deposit
+from logic import Deposit
 from typing import Union, List
-from consts import Capitalization
+from consts import Capitalization, TypeBankAccount
 
 
 class SDepositCreate(BaseModel):
     name: str
+    name_bank: str
     initial_amount: float
     interest_rate: float
     term_months: int
-    date_from: Union[date, None] = date
+    date_from: Union[date, None] = None
     capitalization: Capitalization = Capitalization.MONTHLY
+    type_account: TypeBankAccount = TypeBankAccount.DEPOSIT
 
 
 class SDepositResponse(SDepositCreate):

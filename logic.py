@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from dataclasses import dataclass
 from typing import List, Union, Dict
-from consts import Capitalization
+from consts import Capitalization, TypeBankAccount
 
 
 class InterestCalculator(ABC):
@@ -45,7 +45,9 @@ CALCULATORS = {
 
 @dataclass
 class DepositBase:
+    name_bank: str
     name: str
+    type_account: TypeBankAccount
     initial_amount: float
     interest_rate: float
     term_months: int

@@ -2,13 +2,15 @@
 from fastapi import FastAPI
 from fastapi import HTTPException, status
 
-from models import portfolio_service, Deposit
+from logic import portfolio_service, Deposit
 from schemas import SDepositCreate, SDepositResponse
 
 from datetime import date
-
+from deposits.router import router as router_deposits
 
 app = FastAPI()
+
+app.include_router(router_deposits)
 
 
 @app.get("/")
@@ -18,8 +20,8 @@ def root():
     }
 
 
-@app.post("/deposits", response_model = SDepositResponse)
-def create_deposit(deposit_data: SDepositCreate):
+@app.post("/deposits")
+def create_deposit(deposit_data: SDepositCreate) -> SDepositResponse:
     try:
         existing = portfolio_service.get_deposit_by_name(deposit_data.name)
 
@@ -61,33 +63,37 @@ def create_deposit(deposit_data: SDepositCreate):
         )
 
 
-@app.get("/deposits")
-def get_deposits():
-    deposits = portfolio_service.get_deposit_names()
-    print(deposits)
+# @app.get("/deposits")
+# def get_deposits():
+#     deposits = portfolio_service.get_deposit_names()
+#     print(deposits)
 
-    return deposits
+#     return deposits
 
 
-@app.patch("deposits/{name}")
-@app.get("/deposits/{name}")
-def get_deposit(name: str):
-    deposit = portfolio_service.get_deposit_by_name(name)
+# @app.patch("/deposits/{name}")
+# def patch_deposit():
+#     pass
 
-    if not deposit:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Вклад с именем '{name}' не найден"
-        )
 
-    return DepositResponse(
-        name=deposit.name,
-        initial_amount=deposit.initial_amount,
-        interest_rate=deposit.interest_rate,
-        term_months=deposit.term_months,
-        date_from=deposit.date_from,
-        capitalization=deposit.capitalization,
-        date_to=deposit.date_to,
-        profit=deposit.calculate_profit(deposit.term_months),
-        total_amount=deposit.calculate_amount(deposit.term_months)
-    )
+# @app.get("/deposits/{name}")
+# def get_deposit(name: str):
+#     deposit = portfolio_service.get_deposit_by_name(name)
+
+#     if not deposit:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Вклад с именем '{name}' не найден"
+#         )
+
+#     return DepositResponse(
+#         name=deposit.name,
+#         initial_amount=deposit.initial_amount,
+#         interest_rate=deposit.interest_rate,
+#         term_months=deposit.term_months,
+#         date_from=deposit.date_from,
+#         capitalization=deposit.capitalization,
+#         date_to=deposit.date_to,
+#         profit=deposit.calculate_profit(deposit.term_months),
+#         total_amount=deposit.calculate_amount(deposit.term_months)
+# )
