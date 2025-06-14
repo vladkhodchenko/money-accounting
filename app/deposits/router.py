@@ -15,7 +15,7 @@ def get_deposits():
 
 @router.get("/{deposit_id}")
 def get_deposit(deposit_id):
-    pass
+    return DepositService.find_by_id(deposit_id)
 
 
 @router.patch("/{deposit_id}")
