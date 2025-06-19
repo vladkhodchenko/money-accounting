@@ -1,6 +1,5 @@
 from database import session
-from deposits.models import Deposit
-from sqlalchemy import select
+from sqlalchemy import select, insert, delete
 
 
 class BaseService:
@@ -26,3 +25,33 @@ class BaseService:
             query = select(cls.model).filter_by(**filter_by)
             result = s.execute(query)
             return result.scalars().all()
+
+    @classmethod
+    def insert(cls, **values):
+        with session() as s:
+            query = insert(cls.model).values(**values)
+            result = s.execute(query)
+            # s.commit()
+            return result.scalar()
+            
+    @classmethod
+    def delete(cls, item: str):
+        with session() as s:
+            s.delete(item)
+            s.commit()
+            return True
+
+    @classmethod
+    def find_name(cls, model_name:str):
+        with session() as s:
+            query = select(cls.model).filter_by(name=model_name)
+            result = s.execute(query)
+            return result.scalars().one_or_none()
+
+
+    @classmethod
+    def find_id(cls, model_id:str):
+        with session() as s:
+            query = select(cls.model).filter_by(id=model_id)
+            result = s.execute(query)
+            return result.scalars().one_or_none()

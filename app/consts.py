@@ -8,8 +8,8 @@ class Capitalization(str, Enum):
 
 
 class TypeBankAccount(str, Enum):
-    ACCUMULATION = "accumulation"
-    DEPOSIT = "deposit"
+    ACCUMULATION = "accumulation" # накопительный счет
+    DEPOSIT = "deposit" # вклад
 
 
 class Bank(str, Enum):

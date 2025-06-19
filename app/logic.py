@@ -47,12 +47,12 @@ CALCULATORS = {
 class DepositBase:
     name_bank: str
     name: str
-    type_account: TypeBankAccount
+    # type_account: TypeBankAccount
     initial_amount: float
     interest_rate: float
     term_months: int
     date_from: date
-    capitalization: Capitalization = Capitalization.MONTHLY
+    capitalization_id: Capitalization = Capitalization.MONTHLY
 
     @property
     def date_to(self):
@@ -61,7 +61,7 @@ class DepositBase:
 
 class Deposit(DepositBase):
     def calculate_profit(self, months: int) -> float:
-        calculator = CALCULATORS[self.capitalization.value]
+        calculator = CALCULATORS[self.capitalization_id.value]
         return round(calculator.calculate_profit(self, months), 2)
 
     def calculate_amount(self, months: int) -> float:
@@ -69,32 +69,32 @@ class Deposit(DepositBase):
         return round(self.initial_amount + profit, 2)
 
 
-class Portfolio:
-    def __init__(self):
-        self._deposits: List[Deposit] = []
+# class Portfolio:
+#     def __init__(self):
+#         self._deposits: List[Deposit] = []
 
-    def add_deposit(self, *deposits: Deposit):
-        self._deposits.extend(deposits)
+#     def add_deposit(self, *deposits: Deposit):
+#         self._deposits.extend(deposits)
 
-    def get_deposit_names(self) -> List[str]:
-        return [deposit.name for deposit in self._deposits]
+#     def get_deposit_names(self) -> List[str]:
+#         return [deposit.name for deposit in self._deposits]
 
-    def get_deposits(self) -> List[Deposit]:
-        return self._deposits.copy()
+#     def get_deposits(self) -> List[Deposit]:
+#         return self._deposits.copy()
 
-    def get_deposit_by_name(self, name: str) -> Union[Deposit, None]:
-        return next((d for d in self._deposits if d.name == name), None)
+#     def get_deposit_by_name(self, name: str) -> Union[Deposit, None]:
+#         return next((d for d in self._deposits if d.name == name), None)
 
-    def calculate_total(self, target_months: int) -> float:
-        total = 0.0
-        for deposit in self._deposits:
-            # Учитываем только действующие вклады
-            if target_months <= deposit.term_months:
-                total += deposit.calculate_amount(target_months)
-        return total
+#     def calculate_total(self, target_months: int) -> float:
+#         total = 0.0
+#         for deposit in self._deposits:
+#             # Учитываем только действующие вклады
+#             if target_months <= deposit.term_months:
+#                 total += deposit.calculate_amount(target_months)
+#         return total
 
-    def forecast(self, periods: List[int]) -> dict:
-        return {months: self.calculate_total(months) for months in periods}
+#     def forecast(self, periods: List[int]) -> dict:
+#         return {months: self.calculate_total(months) for months in periods}
 
 
-portfolio_service = Portfolio()
+# portfolio_service = Portfolio()
