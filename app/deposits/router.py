@@ -20,9 +20,9 @@ def get_deposits():
     return DepositService.find_all()
 
 
-# @router.get("/{deposit_id}")
-# def get_deposit_by_id(deposit_id: int):
-#     return DepositService.find_by_id(deposit_id)
+@router.get("/{deposit_id}")
+def get_deposit_by_id(deposit_id: int):
+    return DepositService.find_by_id(deposit_id)
 
 
 @router.get("/{name}")
@@ -30,23 +30,30 @@ def get_deposit_by_name(name: str):
     return DepositService.find_name(name)
     deposit = DepositService.find_name(name)
     print(deposit)
-    # if not deposit:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail=f"Deposit with name '{name}' not found"
-    #     )
+    if not deposit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Deposit with name '{name}' not found"
+        )
 
     return deposit
 
 
 @router.patch("/{name}")
-def patch_deposit(deposit_data: SDepositPatch):
+def patch_deposit(deposit_data: SDepositPatch)-> SDeposit:
     stored_deposit_data = DepositService.find_name(deposit_data.name)
     if stored_deposit_data:
         update_data = deposit_data.dict(exclude_unset=True)
-        result = DepositService.update(model_name=deposit_data.name, **update_data)
-
-        return result
+        try:
+            result = DepositService.update(model_name=deposit_data.name, **update_data)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error in updating db"
+            )
+        for key, value in update_data.items():
+            setattr(stored_deposit_data, key, value)
+        return stored_deposit_data
     else: 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -55,7 +62,7 @@ def patch_deposit(deposit_data: SDepositPatch):
     
    
 @router.post("")
-def create_deposit(deposit_data: SDepositCreate):
+def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
     if DepositService.find_name(deposit_data.name):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
