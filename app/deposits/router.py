@@ -1,18 +1,17 @@
-from datetime import timedelta, date
+from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from dateutil.relativedelta import relativedelta
 
 from consts import Capitalization
 from database import session
 from deposits.service import DepositService
-from deposits.schemas import SDepositCreate, SDepositResponse
+from deposits.schemas import SDepositCreate, SDeposit, SDepositPatch
 from logic import Deposit
 
 
-
 router = APIRouter(
-    prefix = "/deposits",
-    tags = ["Deposits"]
+    prefix="/deposits",
+    tags=["Deposits"]
 )
 
 
@@ -21,56 +20,65 @@ def get_deposits():
     return DepositService.find_all()
 
 
-@router.get("/{deposit_id}")
-def get_deposit(deposit_id) -> SDepositResponse:
-    return DepositService.find_by_id(deposit_id)
-
-
-@router.get("/{name}")
-def get_deposit(name: str):
-    deposit = portfolio_service.get_deposit_by_name(name)
-
-    if not deposit:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Deposit with name '{name}' not found"
-        )
-
-    return DepositResponse(
-        name=deposit.name,
-        initial_amount=deposit.initial_amount,
-        interest_rate=deposit.interest_rate,
-        term_months=deposit.term_months,
-        date_from=deposit.date_from,
-        capitalization=deposit.capitalization,
-        date_to=deposit.date_to,
-        profit=deposit.calculate_profit(deposit.term_months),
-        total_amount=deposit.calculate_amount(deposit.term_months)
-)
-
-
-# @router.patch("/{deposit_id}")
-# def patch_deposit(deposit_id) -> SDepositCreate:
+# @router.get("/{deposit_id}")
+# def get_deposit_by_id(deposit_id: int):
 #     return DepositService.find_by_id(deposit_id)
 
 
+@router.get("/{name}")
+def get_deposit_by_name(name: str):
+    return DepositService.find_name(name)
+    deposit = DepositService.find_name(name)
+    print(deposit)
+    # if not deposit:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"Deposit with name '{name}' not found"
+    #     )
+
+    return deposit
+
+
+@router.patch("/{name}")
+def patch_deposit(deposit_data: SDepositPatch):
+    stored_deposit_data = DepositService.find_name(deposit_data.name)
+    if stored_deposit_data:
+        update_data = deposit_data.dict(exclude_unset=True)
+        result = DepositService.update(model_name=deposit_data.name, **update_data)
+
+        return result
+    else: 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Deposit with name '{deposit_data.name}' not found"
+        )
+    
+   
 @router.post("")
-def create_deposit(deposit_data: SDepositCreate) -> SDepositResponse:
-    existing = DepositService.find_name(deposit_data.name)
-    if existing:
-          raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Вклад с именем '{deposit_data.name}' уже существует")
+def create_deposit(deposit_data: SDepositCreate):
+    if DepositService.find_name(deposit_data.name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Deposit with name '{deposit_data.name}' is exist"
+        )
+
+    if deposit_data.initial_amount == 0 or \
+            deposit_data.term_months == 0 or \
+            deposit_data.interest_rate == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect input"
+        )
 
     if deposit_data.date_from is None:
         deposit_data.date_from = date.today()
 
-    
-    date_to = deposit_data.date_from + relativedelta(months=deposit_data.term_months)
+    date_to = deposit_data.date_from + \
+        relativedelta(months=deposit_data.term_months)
 
     deposit = Deposit(
         name=deposit_data.name,
-        name_bank = deposit_data.name_bank,
+        name_bank=deposit_data.name_bank,
         # type_account = deposit_data.type_account,
         initial_amount=deposit_data.initial_amount,
         interest_rate=deposit_data.interest_rate,
@@ -78,21 +86,21 @@ def create_deposit(deposit_data: SDepositCreate) -> SDepositResponse:
         date_from=deposit_data.date_from,
         capitalization_id=deposit_data.capitalization_id,
     )
-    
-    deposit_response = SDepositResponse(
-        **deposit_data.dict(),
-        final_amount = deposit.calculate_amount(deposit.term_months),
-        earned_amount = deposit.calculate_profit(deposit.term_months),
-        date_to = date_to,
-    )
-    
-    # try:
-    DepositService.insert(**deposit_response.dict())
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST
-    #     )
 
+    deposit_response = SDeposit(
+        **deposit_data.dict(),
+        final_amount=deposit.calculate_amount(deposit.term_months),
+        earned_amount=deposit.calculate_profit(deposit.term_months),
+        date_to=date_to,
+    )
+
+    try:
+        DepositService.insert(**deposit_response.dict())
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error in inserting db"
+        )
     return deposit_response
 
 
@@ -106,5 +114,3 @@ def delete_deposit(name: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Deposit with name '{name}' not found"
         )
-
-
