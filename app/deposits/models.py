@@ -4,10 +4,19 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
+
+# тип капитализации: ежемесячно/в конце срока/ежедневно
 class CapitalizationType(Base):
     __tablename__ = 'capitalization_types'
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
+
+
+# вклад/сберегательный счет
+class DepositType(Base):
+    __tablename__ = 'deposit_types'
+    id = Column(Integer, primary_key=True)
+    deposit_type = Column(String(50), unique=True, nullable=False)
 
 
 class Deposit(Base):
@@ -23,5 +32,6 @@ class Deposit(Base):
     date_from = Column(Date, nullable=False)
     date_to = Column(Date, nullable=False)
     capitalization_id = Column(Integer, ForeignKey("capitalization_types.id"))
+    deposit_type_id = Column(Integer, ForeignKey("deposit_types.id"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, onupdate=func.now())

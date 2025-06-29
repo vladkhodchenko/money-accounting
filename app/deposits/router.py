@@ -1,4 +1,5 @@
 from datetime import date
+from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, status
 from dateutil.relativedelta import relativedelta
 
@@ -21,15 +22,21 @@ def get_deposits():
 
 
 @router.get("/{deposit_id}")
-def get_deposit_by_id(deposit_id: int):
-    return DepositService.find_by_id(deposit_id)
+def get_deposit_by_id(deposit_id: int) -> SDeposit:
+    try:
+        result = DepositService.find_by_id(deposit_id)
+        return result
+    except Exception:
+        raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error in getting deposit from db"
+            )
 
 
 @router.get("/{name}")
 def get_deposit_by_name(name: str):
-    return DepositService.find_name(name)
+    print(name)
     deposit = DepositService.find_name(name)
-    print(deposit)
     if not deposit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -45,8 +52,8 @@ def patch_deposit(deposit_data: SDepositPatch)-> SDeposit:
     if stored_deposit_data:
         update_data = deposit_data.dict(exclude_unset=True)
         try:
-            result = DepositService.update(model_name=deposit_data.name, **update_data)
-        except Exception as e:
+            DepositService.update(model_name=deposit_data.name, **update_data)
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Error in updating db"
@@ -63,6 +70,7 @@ def patch_deposit(deposit_data: SDepositPatch)-> SDeposit:
    
 @router.post("")
 def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
+    print(deposit_data)
     if DepositService.find_name(deposit_data.name):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -86,14 +94,15 @@ def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
     deposit = Deposit(
         name=deposit_data.name,
         name_bank=deposit_data.name_bank,
-        # type_account = deposit_data.type_account,
+        deposit_type_id = deposit_data.deposit_type_id,
         initial_amount=deposit_data.initial_amount,
         interest_rate=deposit_data.interest_rate,
         term_months=deposit_data.term_months,
         date_from=deposit_data.date_from,
         capitalization_id=deposit_data.capitalization_id,
     )
-
+    print(dir(deposit_data))
+    
     deposit_response = SDeposit(
         **deposit_data.dict(),
         final_amount=deposit.calculate_amount(deposit.term_months),
@@ -101,17 +110,17 @@ def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
         date_to=date_to,
     )
 
-    try:
-        DepositService.insert(**deposit_response.dict())
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error in inserting db"
-        )
-    return deposit_response
+    # try:
+    DepositService.insert(**deposit_response.dict())
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Error in inserting db"
+        # )
+    # return deposit_response
 
 
-@router.delete("/{name}")
+@router.delete("/{name}", status_code=202)
 def delete_deposit(name: str):
     item = DepositService.find_name(name)
     if item:
@@ -121,3 +130,4 @@ def delete_deposit(name: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Deposit with name '{name}' not found"
         )
+    return HTTPStatus(status=202)

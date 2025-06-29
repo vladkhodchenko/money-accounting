@@ -47,12 +47,12 @@ CALCULATORS = {
 class DepositBase:
     name_bank: str
     name: str
-    # type_account: TypeBankAccount
     initial_amount: float
     interest_rate: float
     term_months: int
     date_from: date
     capitalization_id: Capitalization = Capitalization.MONTHLY
+    deposit_type_id: TypeBankAccount = TypeBankAccount.DEPOSIT
 
     @property
     def date_to(self):

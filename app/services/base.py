@@ -43,10 +43,11 @@ class BaseService:
 
     @classmethod
     def find_name(cls, model_name:str):
+        print(model_name)
         with session() as s:
             query = select(cls.model).filter_by(name=model_name)
             result = s.execute(query)
-            return result.scalars().one_or_none()
+            return result.scalars().first()
 
 
     @classmethod
