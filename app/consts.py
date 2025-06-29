@@ -13,7 +13,9 @@ class TypeBankAccount(str, Enum):
 
 
 class Bank(str, Enum):
-    TINKOFF = "tinkoff"
+    TINKOFF = "Tinkoff" or "T-Bank"
     VTB = "VTB"
-    ALFABANK = "alfabank"
+    ALFABANK = "Alfabank"
+    GAZPROMBANK = "Gazprombank"
+    DOMRF = "Dom RF"
     

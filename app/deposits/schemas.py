@@ -16,7 +16,7 @@ class SDepositCreate(BaseModel):
     date_from: Union[date, None] = None
     capitalization_id: Capitalization = Capitalization.MONTHLY
     deposit_type_id: TypeBankAccount = TypeBankAccount.DEPOSIT
-    # type_account: TypeBankAccount = TypeBankAccount.DEPOSIT
+    # type_bank_account: TypeBankAccount = TypeBankAccount.DEPOSIT
     
 class SDeposit(SDepositCreate):
     date_to: date
@@ -36,7 +36,7 @@ class SDepositPatch(BaseModel):
     term_months: Optional[int] = Field(None, gt=0)
     date_from: Optional[date] = None
     capitalization_id: Optional[Capitalization] = Capitalization.MONTHLY
-    type_account: Optional[TypeBankAccount] = TypeBankAccount.DEPOSIT
+    deposit_type_id: Optional[TypeBankAccount] = TypeBankAccount.DEPOSIT
 
     @validator('initial_amount', 'interest_rate', 'term_months', pre=True)
     def validate_positive_values(cls, v):

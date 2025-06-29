@@ -43,7 +43,6 @@ class BaseService:
 
     @classmethod
     def find_name(cls, model_name:str):
-        print(model_name)
         with session() as s:
             query = select(cls.model).filter_by(name=model_name)
             result = s.execute(query)
@@ -63,4 +62,5 @@ class BaseService:
         with session() as s:
             query = update(cls.model).where(cls.model.name == model_name).values(**values)
             result = s.execute(query)
+            s.commit()
             return result.rowcount

@@ -52,7 +52,7 @@ def patch_deposit(deposit_data: SDepositPatch)-> SDeposit:
     if stored_deposit_data:
         update_data = deposit_data.dict(exclude_unset=True)
         try:
-            DepositService.update(model_name=deposit_data.name, **update_data)
+            print(DepositService.update(model_name=deposit_data.name, **update_data))
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -90,6 +90,7 @@ def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
 
     date_to = deposit_data.date_from + \
         relativedelta(months=deposit_data.term_months)
+    # с точки зрения архитектуры верно ли так делать?
 
     deposit = Deposit(
         name=deposit_data.name,
@@ -110,14 +111,14 @@ def create_deposit(deposit_data: SDepositCreate) -> SDeposit:
         date_to=date_to,
     )
 
-    # try:
-    DepositService.insert(**deposit_response.dict())
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail=f"Error in inserting db"
-        # )
-    # return deposit_response
+    try:
+        DepositService.insert(**deposit_response.dict())
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error in inserting db"
+        )
+    return deposit_response
 
 
 @router.delete("/{name}", status_code=202)
@@ -130,4 +131,4 @@ def delete_deposit(name: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Deposit with name '{name}' not found"
         )
-    return HTTPStatus(status=202)
+    return HTTPStatus.ACCEPTED
