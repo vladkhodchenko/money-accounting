@@ -2,11 +2,14 @@ from datetime import date
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, status
 from dateutil.relativedelta import relativedelta
+from typing import List
 
 from consts import Capitalization
 from database import session
+
 from deposits.service import DepositService
 from deposits.schemas import SDepositCreate, SDeposit, SDepositPatch
+
 from logic import Deposit
 
 
@@ -17,7 +20,7 @@ router = APIRouter(
 
 
 @router.get("")
-def get_deposits():
+def get_deposits() -> List[SDeposit]:
     return DepositService.find_all()
 
 

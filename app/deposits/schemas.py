@@ -16,7 +16,7 @@ class SDepositCreate(BaseModel):
     date_from: Union[date, None] = None
     capitalization_id: Capitalization = Capitalization.MONTHLY
     deposit_type_id: TypeBankAccount = TypeBankAccount.DEPOSIT
-    # type_bank_account: TypeBankAccount = TypeBankAccount.DEPOSIT
+
     
 class SDeposit(SDepositCreate):
     date_to: date
