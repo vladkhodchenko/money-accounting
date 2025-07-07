@@ -2,10 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from deposits.router import router as router_deposits
+from auth.router import router as router_auth
+
 
 app = FastAPI()
 app.include_router(router_deposits)
-
+app.include_router(router_auth)
 
 origins = ["http://localhost"]
 

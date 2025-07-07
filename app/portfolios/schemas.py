@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from datetime import date
-from logic import Deposit
+from app.deposits.logic import Deposit
 from typing import Union, List
-from consts import Capitalization, TypeBankAccount
+from app.deposits.consts import Capitalization, TypeBankAccount
 
 
 class SPortfolio(BaseModel):
