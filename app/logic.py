@@ -9,19 +9,19 @@ from consts import Capitalization, TypeBankAccount
 
 class InterestCalculator(ABC):
     @abstractmethod
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+    def calculate_profit(self, deposit: "DepositBase", months: int) -> float:
         pass
 
 
 class MonthlyInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+    def calculate_profit(self, deposit: "DepositBase", months: int) -> float:
         effective_months = min(months, deposit.term_months)
         monthly_rate = deposit.interest_rate / 100 / 12
         return deposit.initial_amount * monthly_rate * effective_months
 
 
 class DailyInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+    def calculate_profit(self, deposit: "DepositBase", months: int) -> float:
         effective_months = min(months, deposit.term_months)
         days = effective_months * 30  # Упрощённо, 30 дней в месяце
         daily_rate = deposit.interest_rate / 100 / 365
@@ -29,17 +29,20 @@ class DailyInterestCalculator(InterestCalculator):
 
 
 class EndTermInterestCalculator(InterestCalculator):
-    def calculate_profit(self, deposit: 'DepositBase', months: int) -> float:
+    def calculate_profit(self, deposit: "DepositBase", months: int) -> float:
         if months < deposit.term_months:
             return 0
-        return deposit.initial_amount * \
-            (deposit.interest_rate / 100) * (deposit.term_months / 12)
+        return (
+            deposit.initial_amount
+            * (deposit.interest_rate / 100)
+            * (deposit.term_months / 12)
+        )
 
 
 CALCULATORS = {
     "monthly": MonthlyInterestCalculator(),
     "daily": DailyInterestCalculator(),
-    "end": EndTermInterestCalculator()
+    "end": EndTermInterestCalculator(),
 }
 
 

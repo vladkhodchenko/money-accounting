@@ -32,8 +32,10 @@ class BaseService:
             query = insert(cls.model).values(**values)
             result = s.execute(query)
             s.commit()
-            return result.inserted_primary_key[0] if result.inserted_primary_key else None
-            
+            return (
+                result.inserted_primary_key[0] if result.inserted_primary_key else None
+            )
+
     @classmethod
     def delete(cls, item: str):
         with session() as s:
@@ -42,25 +44,25 @@ class BaseService:
             return True
 
     @classmethod
-    def find_name(cls, model_name:str):
+    def find_name(cls, model_name: str):
         with session() as s:
             query = select(cls.model).filter_by(name=model_name)
             result = s.execute(query)
             return result.scalars().first()
 
-
     @classmethod
-    def find_id(cls, model_id:str):
+    def find_id(cls, model_id: str):
         with session() as s:
             query = select(cls.model).filter_by(id=model_id)
             result = s.execute(query)
             return result.scalars().one_or_none()
-        
 
     @classmethod
     def update(cls, model_name: str, **values):
         with session() as s:
-            query = update(cls.model).where(cls.model.name == model_name).values(**values)
+            query = (
+                update(cls.model).where(cls.model.name == model_name).values(**values)
+            )
             result = s.execute(query)
             s.commit()
             return result.rowcount

@@ -1,5 +1,14 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Column, Integer, String, Float, Date, ForeignKey, TIMESTAMP
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Float,
+    Date,
+    ForeignKey,
+    TIMESTAMP,
+)
 from sqlalchemy.sql import func
 
 Base = declarative_base()
@@ -7,14 +16,14 @@ Base = declarative_base()
 
 # тип капитализации: ежемесячно/в конце срока/ежедневно
 class CapitalizationType(Base):
-    __tablename__ = 'capitalization_types'
+    __tablename__ = "capitalization_types"
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
 
 
 # вклад/сберегательный счет
 class DepositType(Base):
-    __tablename__ = 'deposit_types'
+    __tablename__ = "deposit_types"
     id = Column(Integer, primary_key=True)
     deposit_type = Column(String(50), unique=True, nullable=False)
 

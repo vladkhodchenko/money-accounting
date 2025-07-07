@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,9 +7,7 @@ app = FastAPI()
 app.include_router(router_deposits)
 
 
-origins = [
-    "http://localhost"
-]
+origins = ["http://localhost"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,8 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
-    return {
-        "message": "Savings Portfolio API - Документация доступна по /docs"
-    }
+    return {"message": "Savings Portfolio API - Документация доступна по /docs"}

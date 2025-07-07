@@ -1,6 +1,7 @@
 from enum import Enum
 from mmap import ACCESS_COPY
 
+
 class Capitalization(str, Enum):
     MONTHLY = "monthly"
     DAILY = "daily"
@@ -8,8 +9,8 @@ class Capitalization(str, Enum):
 
 
 class TypeBankAccount(str, Enum):
-    ACCUMULATION = "accumulation" # накопительный счет
-    DEPOSIT = "deposit" # вклад
+    ACCUMULATION = "accumulation"  # накопительный счет
+    DEPOSIT = "deposit"  # вклад
 
 
 class Bank(str, Enum):
@@ -18,4 +19,3 @@ class Bank(str, Enum):
     ALFABANK = "Alfabank"
     GAZPROMBANK = "Gazprombank"
     DOMRF = "Dom RF"
-    
