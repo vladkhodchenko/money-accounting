@@ -4,13 +4,13 @@ from fastapi import APIRouter, HTTPException, status
 from dateutil.relativedelta import relativedelta
 from typing import List
 
-from consts import Capitalization
+from deposits.consts import Capitalization
 from database import session
 
 from deposits.service import DepositService
 from deposits.schemas import SDepositCreate, SDeposit, SDepositPatch
 
-from logic import Deposit
+from deposits.logic import Deposit
 
 
 router = APIRouter(prefix="/deposits", tags=["Deposits"])
@@ -21,16 +21,16 @@ def get_deposits() -> List[SDeposit]:
     return DepositService.find_all()
 
 
-@router.get("/{deposit_id}")
-def get_deposit_by_id(deposit_id: int) -> SDeposit:
-    try:
-        result = DepositService.find_by_id(deposit_id)
-        return result
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error in getting deposit from db",
-        )
+# @router.get("/{deposit_id}")
+# def get_deposit_by_id(deposit_id: int) -> SDeposit:
+#     try:
+#         result = DepositService.find_by_id(deposit_id)
+#         return result
+#     except Exception:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail=f"Error in getting deposit from db",
+#         )
 
 
 @router.get("/{name}")

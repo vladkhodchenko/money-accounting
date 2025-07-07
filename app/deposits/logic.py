@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from dataclasses import dataclass
 from typing import List, Union, Dict
-from consts import Capitalization, TypeBankAccount
+from deposits.consts import Capitalization, TypeBankAccount
 
 
 class InterestCalculator(ABC):

@@ -5,7 +5,7 @@ from datetime import (
     datetime,
 )
 
-from consts import Capitalization, TypeBankAccount
+from deposits.consts import Capitalization, TypeBankAccount
 
 
 class SDepositCreate(BaseModel):
