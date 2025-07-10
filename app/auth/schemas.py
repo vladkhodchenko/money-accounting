@@ -1,7 +1,16 @@
 from pydantic import BaseModel, Field, validator
 
-class User(BaseModel):
-    name: str
-    hash_password: str
-    email: str
 
+class UserBase(BaseModel):
+    name: str
+    # email: str
+
+
+class User(UserBase):
+    # name: str
+    password: str
+    
+
+class UserInDB(UserBase):
+    hashed_password: str
+    # email: str
