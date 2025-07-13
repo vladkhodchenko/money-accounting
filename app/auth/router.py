@@ -5,6 +5,7 @@ from auth.service import UserService
 from passlib.context import CryptContext
 from auth.schemas import User, UserBase, UserInDB
 import secrets
+import jwt
 
 router = APIRouter(prefix="/who", tags=["Auth"])
 
@@ -55,14 +56,12 @@ def login(user_data: User):
     
 def is_exist_user(db, name):
     for user in db:
-        print(user)
-        print(user.name)
         if user.name == name:
             return user
         return False
+
+
 # Basic auth
-
-
 @router.get("")
 def get_user(creds: HTTPBasicCredentials = Depends(basic)) -> dict:
     if creds.username == secret_user and creds.password == secret_password:
