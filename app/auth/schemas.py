@@ -7,9 +7,8 @@ class UserBase(BaseModel):
 
 
 class User(UserBase):
-    # name: str
     password: str
-    
+
 
 class UserInDB(UserBase):
     hashed_password: str

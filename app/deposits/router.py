@@ -21,18 +21,6 @@ def get_deposits() -> List[SDeposit]:
     return DepositService.find_all()
 
 
-# @router.get("/{deposit_id}")
-# def get_deposit_by_id(deposit_id: int) -> SDeposit:
-#     try:
-#         result = DepositService.find_by_id(deposit_id)
-#         return result
-#     except Exception:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Error in getting deposit from db",
-#         )
-
-
 @router.get("/{name}")
 def get_deposit_by_name(name: str):
     print(name)

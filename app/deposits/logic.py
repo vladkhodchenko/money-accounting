@@ -70,34 +70,3 @@ class Deposit(DepositBase):
     def calculate_amount(self, months: int) -> float:
         profit = self.calculate_profit(months)
         return round(self.initial_amount + profit, 2)
-
-
-# class Portfolio:
-#     def __init__(self):
-#         self._deposits: List[Deposit] = []
-
-#     def add_deposit(self, *deposits: Deposit):
-#         self._deposits.extend(deposits)
-
-#     def get_deposit_names(self) -> List[str]:
-#         return [deposit.name for deposit in self._deposits]
-
-#     def get_deposits(self) -> List[Deposit]:
-#         return self._deposits.copy()
-
-#     def get_deposit_by_name(self, name: str) -> Union[Deposit, None]:
-#         return next((d for d in self._deposits if d.name == name), None)
-
-#     def calculate_total(self, target_months: int) -> float:
-#         total = 0.0
-#         for deposit in self._deposits:
-#             # Учитываем только действующие вклады
-#             if target_months <= deposit.term_months:
-#                 total += deposit.calculate_amount(target_months)
-#         return total
-
-#     def forecast(self, periods: List[int]) -> dict:
-#         return {months: self.calculate_total(months) for months in periods}
-
-
-# portfolio_service = Portfolio()
