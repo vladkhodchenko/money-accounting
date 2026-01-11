@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from deposits.router import router as router_deposits
-from auth.router import router as router_auth
+from apps.deposits.api.deposits import router as router_deposits
+from apps.auth.router import router as router_auth
 
 
 app = FastAPI()

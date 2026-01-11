@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 
-from auth.service import UserService
 from passlib.context import CryptContext
-from auth.schemas import User, UserBase, UserInDB
-import secrets
+from apps.auth.schemas import User, UserBase, UserInDB
 import jwt
-import auth.security
+import apps.auth.security
 
 router = APIRouter(prefix="/who", tags=["Auth"])
 
@@ -92,7 +90,7 @@ def login_jwt(user_data: User):
     print(is_exist)
     if is_exist:
         if myctx.verify(user_data.password, is_exist.hashed_password):
-            token = auth.security.create_jwt_token({"sub": user_data.name})
+            token = apps.auth.security.create_jwt_token({"sub": user_data.name})
             return {"token": token}
         else:
             raise HTTPException(status_code=401, detail="Incorrect password")

@@ -51,13 +51,6 @@ class BaseService:
             return result.scalars().first()
 
     @classmethod
-    def find_id(cls, model_id: str):
-        with session() as s:
-            query = select(cls.model).filter_by(id=model_id)
-            result = s.execute(query)
-            return result.scalars().one_or_none()
-
-    @classmethod
     def update(cls, model_name: str, **values):
         with session() as s:
             query = (

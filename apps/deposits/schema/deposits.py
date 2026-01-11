@@ -1,7 +1,6 @@
-from pydantic import BaseModel, Field, validator, UUID4
+from pydantic import BaseModel, Field, UUID4
 from datetime import date
-from typing import Optional
-from deposits.consts import Capitalization, TypeBankAccount
+from services.models.deposits import Capitalization, TypeBankAccount
 
 
 class DepositSchema(BaseModel):
@@ -45,21 +44,19 @@ class CreateDepositResponseSchema(BaseModel):
     #     exclude = {"created_at", "updated_at"}
 
 
-class GetDepositResponseSchema(DepositSchema):
-    date_to: date
-    earned_amount: float
-    final_amount: float
+class GetDepositResponseSchema(BaseModel):
+    deposit: DepositSchema
 
-    class Config:
-        orm_mode = True
-        exclude = {"created_at", "updated_at"}
+    # class Config:
+    #     orm_mode = True
+    #     exclude = {"created_at", "updated_at"}
 
 
-class GetDepositsQuerySchema(DepositSchema):
-    deposit_id: str
+class GetDepositsQuerySchema(BaseModel):
+    user_id: str
 
 
-class GetDepositsResponseSchema(DepositSchema):
+class GetDepositsResponseSchema(BaseModel):
     deposits: list[DepositSchema]
 
 
