@@ -1,8 +1,6 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
+from utils.clients.database.base_model import Base
 from enum import Enum
 from sqlalchemy import (
-    create_engine,
     Column,
     Integer,
     String,
@@ -11,9 +9,9 @@ from sqlalchemy import (
     ForeignKey,
     TIMESTAMP,
 )
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-Base = declarative_base()
+from utils.clients.database.mixin_model import MixinModel
 
 
 class Capitalization(str, Enum):
@@ -36,7 +34,7 @@ class Bank(str, Enum):
 
 
 # тип капитализации: ежемесячно/в конце срока/ежедневно
-class CapitalizationType(Base):
+class CapitalizationTypeModel(Base):
     __tablename__ = "capitalization_types"
 
     id = Column(Integer, primary_key=True)
@@ -44,29 +42,34 @@ class CapitalizationType(Base):
 
 
 # вклад/сберегательный счет
-class DepositType(Base):
+class DepositTypeModel(Base):
     __tablename__ = "deposit_types"
 
     id = Column(Integer, primary_key=True)
     deposit_type = Column(String(50), unique=True, nullable=False)
 
 
-class Deposit(Base):
+class DepositsModel(MixinModel):
     __tablename__ = "deposits"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
 
     name = Column(String(100), unique=True, nullable=False)
     name_bank = Column(String(100), unique=True, nullable=False)
+
     initial_amount = Column(Float, nullable=False)
     final_amount = Column(Float, nullable=False)
     earned_amount = Column(Float, nullable=False)
+
     interest_rate = Column(Float, nullable=False)
     term_months = Column(Integer, nullable=False)
+
     date_from = Column(Date, nullable=False)
     date_to = Column(Date, nullable=False)
+
     capitalization_id = Column(Integer, ForeignKey("capitalization_types.id"))
     deposit_type_id = Column(Integer, ForeignKey("deposit_types.id"))
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, onupdate=func.now())
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+

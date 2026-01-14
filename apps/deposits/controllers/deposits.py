@@ -1,7 +1,6 @@
 import uuid
 from fastapi import HTTPException, status
 
-
 from apps.deposits.schema.deposits import (
     DepositSchema,
     GetDepositsQuerySchema,
@@ -19,6 +18,7 @@ async def get_deposit(
     deposit_repository
 ) -> GetDepositResponseSchema:
     deposit = await deposit_repository.get_by_id(deposit_id)
+
     if not deposit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -29,16 +29,15 @@ async def get_deposit(
 
 
 async def get_deposits(
-    user_id,
     query: GetDepositsQuerySchema,
     deposit_repository
 ) -> GetDepositsResponseSchema:
     deposits = await deposit_repository.filter(query.deposit.id)
-    return GetDepositResponseSchema()
+
+    return GetDepositsResponseSchema(deposits=[DepositSchema.model_validate(deposit) for deposit in deposits])
 
 
 async def create_deposit(
-    user_id: str,
     request: CreateDepositRequestSchema,
     deposit_repository
 ):
@@ -56,7 +55,7 @@ async def update_deposit(
 
 
 async def delete_deposit(deposit_id: uuid.UUID, deposit_repository):
-    await deposit_repository.delete(deposit_id)
+    await deposit_repository.delete(deposit_id, )
 
 
 

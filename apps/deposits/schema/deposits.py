@@ -1,14 +1,19 @@
 from pydantic import BaseModel, Field, UUID4
 from datetime import date
-from services.models.deposits import Capitalization, TypeBankAccount
+from services.database.models.deposits import Capitalization, TypeBankAccount
 
 
 class DepositSchema(BaseModel):
     id: UUID4
+    user_id: UUID4
+
     name: str
     name_bank: str
 
     initial_amount: float
+    final_amount: float
+    earned_amount: float
+
     interest_rate: float
     term_months: int
 
@@ -17,14 +22,14 @@ class DepositSchema(BaseModel):
 
     capitalization_id: Capitalization = Capitalization.MONTHLY
     deposit_type_id: TypeBankAccount = TypeBankAccount.DEPOSIT
-
-    earned_amount: float
-    final_amount: float
+    created_at: date
+    updated_at: date
 
 
 class CreateDepositRequestSchema(BaseModel):
     name: str
     name_bank: str = "tinkoff"
+    user_id: UUID4
 
     initial_amount: float = 10000.0
     interest_rate: float = 20.0
@@ -39,17 +44,9 @@ class CreateDepositRequestSchema(BaseModel):
 class CreateDepositResponseSchema(BaseModel):
     deposit: DepositSchema
 
-    # class Config:
-    #     orm_mode = True
-    #     exclude = {"created_at", "updated_at"}
-
 
 class GetDepositResponseSchema(BaseModel):
     deposit: DepositSchema
-
-    # class Config:
-    #     orm_mode = True
-    #     exclude = {"created_at", "updated_at"}
 
 
 class GetDepositsQuerySchema(BaseModel):

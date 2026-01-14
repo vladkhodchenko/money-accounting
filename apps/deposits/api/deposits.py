@@ -12,7 +12,7 @@ from apps.deposits.controllers.deposits import (
     update_deposit,
     delete_deposit
 )
-from apps.deposits.controllers.service import DepositService
+from apps.deposits.controllers.service import DepositsService
 from apps.deposits.schema.deposits import (
     CreateDepositRequestSchema,
     CreateDepositResponseSchema,
@@ -33,8 +33,8 @@ async def get_deposit(deposit_id: uuid.UUID, deposits_repository):
 
 
 @router.get("", response_model=GetDepositsResponseSchema)
-async def get_deposits(user_id: uuid.UUID, deposits_repository):
-    return DepositService.find_all()
+async def get_deposits(query, deposits_repository):
+    return await get_deposits(query, deposits_repository)
 
 
 @router.post("", response_model=CreateDepositResponseSchema)
@@ -114,13 +114,4 @@ async def update_deposit(deposit_data: UpdateDepositRequestSchema):
 
 @router.delete("/{name}", status_code=202)
 async def delete_deposit(name: str):
-    item = DepositService.find_name(name)
-
-    if item:
-        DepositService.delete(item)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Deposit with name '{name}' not found",
-        )
-    return HTTPStatus.ACCEPTED
+    await delete_deposit

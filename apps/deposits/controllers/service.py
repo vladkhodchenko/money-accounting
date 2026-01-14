@@ -1,6 +1,6 @@
-from services.models.deposits import Deposit
-from services.database.base import BaseService
+from services.database.models.deposits import DepositsModel
+# from services.database.base import BaseService
 
 
-class DepositService(BaseService):
-    model = Deposit
+class DepositsService():
+    model = DepositsModel

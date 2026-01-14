@@ -12,3 +12,7 @@ __pycache__
 # MD
 docs/todo.md
 docs/bugs.md
+
+# sqlite
+*.db
+
